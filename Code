@@ -1,0 +1,56 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+import numpy as np
+
+
+file_path = 'C:/Users/SANJAY.K/OneDrive/Documents/skillcraft/dataset/Mall_Customers.csv'
+df = pd.read_csv(file_path)
+
+
+X = df.iloc[:, [3, 4]].values
+
+
+wcss = [] 
+for i in range(1, 11):
+    kmeans_model = KMeans(n_clusters=i, init='k-means++', random_state=42, n_init='auto')
+    kmeans_model.fit(X)
+    wcss.append(kmeans_model.inertia_)
+
+
+optimal_k = 5 
+kmeans_final = KMeans(n_clusters=optimal_k, init='k-means++', random_state=42, n_init='auto')
+y_kmeans = kmeans_final.fit_predict(X)
+
+
+fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+fig.suptitle('K-Means Clustering Analysis: Annual Income vs. Spending Score', fontsize=16)
+
+
+axes[0].plot(range(1, 11), wcss, marker='o', linestyle='--')
+axes[0].set_title('The Elbow Method for Optimal K')
+axes[0].set_xlabel('Number of Clusters (K)')
+axes[0].set_ylabel('WCSS (Inertia)')
+axes[0].grid(True)
+axes[0].axvline(x=optimal_k, color='r', linestyle=':', label=f'Optimal K={optimal_k}')
+axes[0].legend()
+
+
+
+for i in range(optimal_k):
+    axes[1].scatter(X[y_kmeans == i, 0], X[y_kmeans == i, 1], s=100, 
+                    label=f'Cluster {i+1}')
+
+
+axes[1].scatter(kmeans_final.cluster_centers_[:, 0], kmeans_final.cluster_centers_[:, 1], s=300, 
+            c='yellow', marker='*', edgecolor='black', label='Centroids')
+
+axes[1].set_title(f'Customer Clusters (K={optimal_k})')
+axes[1].set_xlabel('Annual Income (k$)')
+axes[1].set_ylabel('Spending Score (1-100)')
+axes[1].legend()
+axes[1].grid(True)
+
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95]) # Adjust layout for suptitle
+plt.show()
